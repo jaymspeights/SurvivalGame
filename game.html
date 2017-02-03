@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Game!</title>
+  </head>
+  <body>
+    <canvas id="canvas" width="600" height="600" style="border: 1px solid black; margin: auto;"></canvas>
+    <script>
+      'use strict';
+      var player = {'x': 300, 'y': 300, 'speed': 4, 'size': 20, 'kills': 0};
+      var c = document.getElementById('canvas');
+      var ctx = c.getContext('2d');
+      var press = {'left': false, 'right': false, 'up': false, 'down': false};
+      var projectiles = [];
+      var enemies = [];
+      var wave = 0;
+      var big = 0;
+
+      document.addEventListener('keydown', function(e){
+        if (e.key == 'a'){
+          press.left = true;
+        }
+        if (e.key == 'd'){
+          press.right = true;
+        }
+        if (e.key == 'w'){
+          press.up = true;
+        }
+        if (e.key == 's'){
+          press.down = true;
+        }
+
+        if (e.key == 'ArrowLeft'){
+          shoot(0);
+        }
+        if (e.key == 'ArrowDown'){
+          shoot(1);
+        }
+        if (e.key == 'ArrowRight'){
+          shoot(2);
+        }
+        if (e.key == 'ArrowUp'){
+          shoot(3);
+        }
+      });
+
+      function shoot(dir) {
+        let spd = 7;
+        if (dir == 0){
+          let p = {'x': player.x - player.size, 'y': player.y, 'xv': -1*spd, 'yv': 0, 'life':1000};
+          projectiles.push(p);
+        }
+        else if (dir == 1){
+          let p = {'x': player.x, 'y': player.y + player.size, 'xv': 0, 'yv': spd, 'life':1000};
+          projectiles.push(p);
+        }
+        else if (dir == 2){
+          let p = {'x': player.x + player.size, 'y': player.y, 'xv': spd, 'yv': 0, 'life':1000};
+          projectiles.push(p);
+        }
+        else if (dir == 3){
+          let p = {'x': player.x, 'y': player.y - player.size, 'xv': 0, 'yv': -1*spd, 'life':1000};
+          projectiles.push(p);
+        }
+      }
+
+      document.addEventListener('keyup', function(e){
+        if (e.key == 'a'){
+          press.left = false;
+        }
+        if (e.key == 'd'){
+          press.right = false;
+        }
+        if (e.key == 'w'){
+          press.up = false;
+        }
+        if (e.key == 's'){
+          press.down = false;
+        }
+      });
+
+      function endGame(){
+        ctx.fillStyle = "#000000";
+        ctx.font = "40px Comic Sans MS";
+        ctx.fillText("You Lose! Kills: " + player.kills, 25, 100);
+      }
+
+      function update() {
+        wave += 1;
+        if (press.down) {
+          player.y += player.speed;
+        }
+        if (press.up) {
+          player.y -= player.speed;
+        }
+        if (press.left) {
+          player.x -= player.speed;
+        }
+        if (press.right) {
+          player.x += player.speed;
+        }
+
+        for (let i = enemies.length -1; i >= 0; i -= 1){
+          for (let j in projectiles){
+            if (Math.abs(enemies[i].x - projectiles[j].x) < enemies[i].size + 2){
+              if (Math.abs(enemies[i].y - projectiles[j].y) < enemies[i].size + 2){
+                enemies[i].hp -= 5;
+                projectiles.splice(j, 1)
+              }
+            }
+          }
+          if (Math.sqrt(Math.pow(enemies[i].x - player.x, 2) + Math.pow(enemies[i].y - player.y,2)) < enemies[i].size + player.size){
+            clearInterval(loop);
+            clearInterval(spawnLoop);
+            endGame();
+            return;
+          }
+          if (enemies[i].hp < 1){
+            enemies.splice(i, 1);
+            player.kills += 1;
+            if (player.kills % 20 == 0) {
+              big += player.kills / 20;
+            }
+          }
+          else {
+            moveEnemy(enemies[i]);
+          }
+        }
+
+        for (let i = projectiles.length - 1; i >=0; i -= 1){
+          projectiles[i].life -= 1;
+          if (projectiles[i].life < 1) {
+            projectiles.splice(i, 1);
+          }
+          else {
+            projectiles[i].x += projectiles[i].xv;
+            projectiles[i].y += projectiles[i].yv;
+          }
+        }
+        draw()
+      }
+
+      function moveEnemy(enemy) {
+        let x = player.x - enemy.x;
+        let y = player.y - enemy.y;
+        let h = Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+
+        let scale = enemy.speed/h;
+
+        enemy.x += x * scale;
+        enemy.y += y * scale;
+      }
+
+      function spawn(odds) {
+        let num = odds
+        num += Math.random() * 100;
+        if (big > 0) {
+          big -= 1;
+          let x = Math.random()>=.5?-40:c.width+40;
+          let y = Math.random()>=.5?-40:c.height+40;
+          let e = {'x': x, 'y': y, 'speed': 2, 'size': 40, 'hp': 50};
+          enemies.push(e);
+        }
+        else if (player.kills > 10 && num > 100 - (player.kills % 100)) {
+          let x = Math.random()>=.5?-15:c.width+15;
+          let y = Math.random()>=.5?-15:c.height+15;
+          let e = {'x': x, 'y': y, 'speed': 5, 'size': 10, 'hp': 1};
+          enemies.push(e);
+          let x2 = x1 - 30;
+          let y2 = Math.random()>=.5?-15:c.height+15;
+          let e2 = {'x': x2, 'y': y2, 'speed': 5, 'size': 10, 'hp': 1};
+          enemies.push(e2);
+        }
+        else {
+          let x = Math.random()>=.5?-20:c.width+20;
+          let y = Math.random()>=.5?-20:c.height+20;
+          let e = {'x': x, 'y': y, 'speed': 3, 'size': 20, 'hp': 15};
+          enemies.push(e);
+        }
+        if (player.kills > 99 && odds > -1*(player.kills/100) && num > 80 - (player.kills % 100)/2) {
+          setTimeout(function(){spawn(odds - 1)}, 300);
+        }
+      }
+
+      function draw(){
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, c.width, c.height);
+
+
+
+        for (let i in enemies){
+          ctx.beginPath();
+          ctx.arc(enemies[i].x, enemies[i].y, enemies[i].size, 0, 2*Math.PI);
+          ctx.strokeStyle = "#990033";
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = "#000000";
+        ctx.strokeStyle = "#000000";
+        ctx.font = "16px Arial";
+        ctx.fillText("Kills: " + player.kills, 10, 15);
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.size, 0, 2*Math.PI);
+        ctx.stroke();
+
+        for (let i in projectiles){
+          ctx.beginPath();
+          ctx.arc(projectiles[i].x, projectiles[i].y, 2, 0, 2*Math.PI);
+          ctx.stroke();
+        }
+
+
+      }
+
+      let loop = setInterval(update, 20);
+      let spawnLoop = setInterval(function(){spawn(0)}, 1000);
+    </script>
+  </body>
+</html>
