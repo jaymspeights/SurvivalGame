@@ -48,19 +48,19 @@
       function shoot(dir) {
         let spd = 7;
         if (dir == 0){
-          let p = {'x': player.x - player.size, 'y': player.y, 'xv': -1*spd, 'yv': 0, 'life':1000};
+          let p = {'x': player.x - player.size, 'y': player.y, 'xv': -1*spd, 'yv': 0, 'life':100};
           projectiles.push(p);
         }
         else if (dir == 1){
-          let p = {'x': player.x, 'y': player.y + player.size, 'xv': 0, 'yv': spd, 'life':1000};
+          let p = {'x': player.x, 'y': player.y + player.size, 'xv': 0, 'yv': spd, 'life':100};
           projectiles.push(p);
         }
         else if (dir == 2){
-          let p = {'x': player.x + player.size, 'y': player.y, 'xv': spd, 'yv': 0, 'life':1000};
+          let p = {'x': player.x + player.size, 'y': player.y, 'xv': spd, 'yv': 0, 'life':100};
           projectiles.push(p);
         }
         else if (dir == 3){
-          let p = {'x': player.x, 'y': player.y - player.size, 'xv': 0, 'yv': -1*spd, 'life':1000};
+          let p = {'x': player.x, 'y': player.y - player.size, 'xv': 0, 'yv': -1*spd, 'life':100};
           projectiles.push(p);
         }
       }
@@ -103,11 +103,9 @@
 
         for (let i = enemies.length -1; i >= 0; i -= 1){
           for (let j in projectiles){
-            if (Math.abs(enemies[i].x - projectiles[j].x) < enemies[i].size + 2){
-              if (Math.abs(enemies[i].y - projectiles[j].y) < enemies[i].size + 2){
-                enemies[i].hp -= 5;
-                projectiles.splice(j, 1)
-              }
+            if (Math.sqrt(Math.pow(enemies[i].x - projectiles[j].x, 2) + Math.pow(enemies[i].y - projectiles[j].y,2)) < enemies[i].size + 2){
+              enemies[i].hp -= 5;
+              projectiles.splice(j, 1);
             }
           }
           if (Math.sqrt(Math.pow(enemies[i].x - player.x, 2) + Math.pow(enemies[i].y - player.y,2)) < enemies[i].size + player.size){
@@ -178,7 +176,7 @@
           let e = {'x': x, 'y': y, 'speed': 3, 'size': 20, 'hp': 15};
           enemies.push(e);
         }
-        if (player.kills > 99 && odds > -1*(player.kills/100) && num > 80 - (player.kills % 100)/2) {
+        if (player.kills > 99 && odds > -1*(player.kills/100) && num > 80 - (player.kills % 100)/1.5) {
           setTimeout(function(){spawn(odds - 1)}, 300);
         }
       }
