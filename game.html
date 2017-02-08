@@ -119,6 +119,7 @@
             player.kills += 1;
             if (player.kills % 20 == 0) {
               big += player.kills / 20;
+              if (big > 4) big = 4;
             }
           }
           else {
@@ -165,7 +166,7 @@
           let y = Math.random()>=.5?-15:c.height+15;
           let e = {'x': x, 'y': y, 'speed': 5, 'size': 10, 'hp': 1};
           enemies.push(e);
-          let x2 = x1 - 30;
+          let x2 = x - 30;
           let y2 = Math.random()>=.5?-15:c.height+15;
           let e2 = {'x': x2, 'y': y2, 'speed': 5, 'size': 10, 'hp': 1};
           enemies.push(e2);
